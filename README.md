@@ -8,3 +8,4 @@
 ##### --ignore [file] - add file to the ignore list (won't be encrypted)
 ##### --ignore "file1,file2,file3" - add multiple files to the ignore list
 ##### --recursive [true/false] - encrypt only files in the local folder or all the files from the top dir
+##### --rewrite [true/false] - remove source files (do not leave originals)

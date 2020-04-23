@@ -6,7 +6,8 @@ import hashlib
 config = {
     'ignore': ['fsencrypt.py'],
     'walkdir': False,
-    'path': '.'
+    'path': '.',
+    'save-duplicates': True
 }
 
 
@@ -14,6 +15,9 @@ def crypt_file(_file):
     if _file not in config['ignore']:
         with open(_file) as source_file:
             source = source_file.read()
+
+        if not config['save-duplicates']:
+            os.remove(_file)
 
         try:
             with open(_file + '.sha256', 'w') as encrypted_file:
@@ -25,6 +29,8 @@ def crypt_file(_file):
 
 
 def main():
+    config['save-duplicates'] = bool(config['save-duplicates'])
+
     if bool(config['walkdir']):
         files_to_encrypt = []
         for _dir, _, files in list(os.walk(config['path'])):
@@ -43,7 +49,8 @@ if __name__ == '__main__':
     if len(args) > 1 and not args[0].startswith('--'):
         config['path'] = args[0]  # constant. Path is the first argument or current folder
 
-    for arg, val in [('--recursive', 'walkdir')]:
+    for arg, val in [('--recursive', 'walkdir'),
+                     ('--rewrite', 'save-duplicates')]:
         try:
             if arg in args:
                 config[val] = args[args.index(arg) + 1]
