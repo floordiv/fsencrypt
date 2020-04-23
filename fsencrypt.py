@@ -4,19 +4,22 @@ import hashlib
 
 
 config = {
-    'ignore': ['fsencrypt.py'],
+    'ignore': ['./fsencrypt.py', './README.md', './.git'],
     'walkdir': False,
     'path': '.',
-    'save-duplicates': True
+    'remove-source': False
 }
 
 
 def crypt_file(_file):
     if _file not in config['ignore']:
-        with open(_file) as source_file:
-            source = source_file.read()
+        try:
+            with open(_file) as source_file:
+                source = source_file.read()
+        except UnicodeDecodeError:
+            print('Failed to encrypt "{}": unable to decode'.format(_file))
 
-        if not config['save-duplicates']:
+        if config['remove-source']:
             os.remove(_file)
 
         try:
@@ -29,12 +32,13 @@ def crypt_file(_file):
 
 
 def main():
-    config['save-duplicates'] = bool(config['save-duplicates'])
+    config['remove-source'] = bool(config['remove-source'])
 
     if bool(config['walkdir']):
         files_to_encrypt = []
         for _dir, _, files in list(os.walk(config['path'])):
-            files_to_encrypt += [_dir + '/' + _file for _file in files]
+            if _dir not in config['ignore'] and True not in [_dir.startswith(i) for i in config['ignore']]:
+                files_to_encrypt += [_dir + '/' + _file for _file in files]
 
     else:
         files_to_encrypt = os.listdir(config['path'])
@@ -50,10 +54,14 @@ if __name__ == '__main__':
         config['path'] = args[0]  # constant. Path is the first argument or current folder
 
     for arg, val in [('--recursive', 'walkdir'),
-                     ('--rewrite', 'save-duplicates')]:
+                     ('--rewrite', 'remove-source'),
+                     ('--ignore', 'ignore')]:
         try:
             if arg in args:
-                config[val] = args[args.index(arg) + 1]
+                if isinstance(config[val], list):   # just append values
+                    config[val].append(args[args.index(arg) + 1])
+                else:
+                    config[val] = args[args.index(arg) + 1]
         except IndexError:
             print('[ERROR] Missing value for argument:', arg)
 
@@ -63,7 +71,7 @@ if __name__ == '__main__':
         if ',' in file:
             result += file.split(',')
         else:
-            result += file
+            result += [file]
 
     config['ignore'] = result
 
