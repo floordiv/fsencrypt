@@ -17,7 +17,9 @@ def crypt_file(_file):
             with open(_file) as source_file:
                 source = source_file.read()
         except UnicodeDecodeError:
-            print('Failed to encrypt "{}": unable to decode'.format(_file))
+            return print('Failed to encrypt "{}": unable to decode'.format(_file))
+        except Exception as exc:
+            return print('Failed to encrypt "{}": {}'.format(_file, str(exc)))
 
         if config['remove-source']:
             os.remove(_file)
